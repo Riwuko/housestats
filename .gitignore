@@ -1,0 +1,27 @@
+*.db
+__pycache__/
+*.csv
+datasets/
+
+
+.idea
+*.log
+*.pot
+*.pyc
+__pycache__
+media
+
+# Python # 
+*.py[cod] 
+*$py.class 
+
+# Environments 
+.env 
+
+# Visual Studio Code # 
+.vscode/* 
+!.vscode/settings.json 
+!.vscode/tasks.json 
+!.vscode/launch.json 
+!.vscode/extensions.json 
+.history
