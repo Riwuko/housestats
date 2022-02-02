@@ -9,6 +9,7 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.server.config["SQLALCHEMY_DATABASE_URI"] = DBConfig.URL
+app.server.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.server.config["SECRET_KEY"] = AppConfig.SECRET_KEY
 
 db.init_app(app.server)
@@ -22,6 +23,10 @@ app.layout = html.Div(children=[
 
 ])
 
+from scrappers import OLXContentScraper
+from parsers import OLXContentParser
+scraped_data = OLXContentScraper("https://www.olx.pl/nieruchomosci/mieszkania/sprzedaz/pomorskie/").scrap()
+OLXContentParser(scraped_data).parse()
 
 #---------------------------------------------------------------------------------------
 #   Sample of a callback with a celery process

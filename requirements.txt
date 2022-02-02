@@ -10,3 +10,4 @@ black
 flower==1.0.0
 Flask-SQLAlchemy==2.5.0
 SQLAlchemy==1.4
+beautifulsoup4==4.9.0
