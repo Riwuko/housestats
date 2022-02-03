@@ -1,18 +1,27 @@
-# import os
-# from celery import Celery
-
-# app = Celery(include=('tasks',))
-# app.conf.beat_schedule = {
-#   'refresh': {
-#     'task': 'refresh',
-#     'schedule': float(os.environ['NEWSPAPER_SCHEDULE']),
-#     'args': (os.environ['NEWSPAPER_URLS'].split(','),)
-#   },
-# }
-
 from celery import Celery
 from .settings import Worker
 
 
-celery_app = Celery('tasks', broker=Worker.BROKER_URL, backend=Worker.RESULT_BACKEND)
+# celery = Celery('tasks', broker=Worker.broker_url, backend=Worker.result_backend)
+# celery.config_from_object(Worker)
+
 # celery_app.autodiscover_tasks()
+def make_celery(app):
+    celery = Celery(
+        app.import_name,
+        backend=Worker.result_backend,
+        broker=Worker.broker_url
+    )
+    celery.conf.update(app.config)
+    celery.config_from_object(Worker)
+    TaskBase = celery.Task
+
+    class ContextTask(celery.Task):
+        abstract = True
+
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery

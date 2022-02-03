@@ -1,3 +1,4 @@
+from ctypes.wintypes import MAX_PATH
 import re
 import bs4 as bs
 from requests import get
@@ -11,14 +12,17 @@ class OLXContentScraper:
     AREA = "Powierzchnia"
     ROOMS = "Liczba pokoi"
     BUILDING = "Rodzaj zabudowy"
+    MAX_PAGE = 15
 
     def __init__(self, url):
         self._url = url
     
     def scrap(self):
-        page = get(self._url)
-        parsed_page = bs.BeautifulSoup(page.content, 'html.parser')
-        offers = parsed_page.find_all('div', class_='offer-wrapper')
+        offers = []
+        for page_num in range(self.MAX_PAGE):
+            page = get(self._url, params={'page': page_num})
+            parsed_page = bs.BeautifulSoup(page.content, 'html.parser')
+            offers += parsed_page.find_all('div', class_='offer-wrapper')
         return [self._get_offer_data(offer) for offer in offers]
 
     def _get_offer_data(self, offer):

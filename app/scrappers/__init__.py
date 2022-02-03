@@ -1,1 +1,1 @@
-from .olx_content_scrapper import OLXContentScraper
+from .olx_content_scraper import OLXContentScraper

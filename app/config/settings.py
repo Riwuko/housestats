@@ -1,11 +1,5 @@
 import os
-
-from flask_sqlalchemy import SQLAlchemy
-
-db = SQLAlchemy()
-
-class AppConfig:
-    SECRET_KEY = os.environ.get("SECRET_KEY")
+from celery.schedules import crontab
 
 class DBConfig:
     NAME = os.environ.get('POSTGRES_DB')
@@ -15,16 +9,29 @@ class DBConfig:
     PORT = os.environ.get('POSTGRES_PORT')
     URL = f'postgresql://{USER}:{PASSWORD}@{HOST}:{PORT}/{NAME}'
 
+class AppConfig:
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+    SQLALCHEMY_DATABASE_URI = DBConfig.URL
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
 class Broker:
     HOST = os.environ.get("REDIS_HOST")
     PORT = os.environ.get("REDIS_PORT")
     DB = os.environ.get("REDIS_DB")
 
 class Worker:
-    BROKER_URL = f'redis://redis:{Broker.PORT}/0'
-    RESULT_BACKEND = BROKER_URL
-    ACCEPT_CONTENT = ['application/json']
-    TASK_SERIALIZER = 'json'
-    RESULT_SERIALIZER = 'json'
-
-
+    broker_url = f'redis://{Broker.HOST}:{Broker.PORT}'
+    result_backend = broker_url
+    accept_content = ['application/json']
+    task_serializer = 'json'
+    result_serializer = 'json'
+    imports = ('tasks')
+    result_expires = 30
+    timezone = 'UTC'
+    beat_schedule = {
+        'test-celery': {
+            'task': 'tasks.scrap_olx_houses',
+            # Every minute
+            'schedule': crontab(hour="*/5"),
+        }
+    }

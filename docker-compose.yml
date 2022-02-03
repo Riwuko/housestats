@@ -2,25 +2,24 @@ version: '3.8'
 
 services:
 
-  db:
+  postgres:
     image: postgres:12
     env_file: .env
     ports:
     - ${POSTGRES_PORT}:${POSTGRES_PORT}
 
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: ./app
     container_name: dash_app
     command: python app/app.py
     restart: always
+    env_file: .env
     volumes:
-      - .:/code
+      - .:/code/
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      - postgres
 
   redis:
     image: "redis:alpine"
@@ -28,20 +27,28 @@ services:
 
   celery:
     image: celery:latest
-    build: .
-    command: celery -A app.config worker -l INFO
+    build: ./app
+    command: celery -A app.celery worker -l INFO
     env_file: .env
     depends_on:
-      - db
       - redis
-    user: nobody
+  #   user: nobody
+
+  celery-beat:
+    image: celery:latest
+    build: ./app
+    command: celery -A app.celery beat -l INFO
+    env_file: .env
+    depends_on:
+      - redis
 
   flower:  
     image: mher/flower:0.9.7
     env_file: .env
+    build: ./app
+    command: celery -A app.celery --broker=${REDIS_HOST}://${REDIS_HOST} flower
     ports:
       - ${FLOWER_PORT}:${FLOWER_PORT}
     depends_on:
       - redis
-      - db
       - celery
