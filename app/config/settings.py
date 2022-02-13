@@ -27,11 +27,10 @@ class Worker:
     result_serializer = 'json'
     imports = ('tasks')
     result_expires = 30
-    timezone = 'UTC'
+    timezone = 'Europe/Berlin'
     beat_schedule = {
-        'test-celery': {
-            'task': 'tasks.scrap_olx_houses',
-            # Every minute
-            'schedule': crontab(hour="*/5"),
+        'download-olx-house': {
+            'task': 'tasks.download_olx_houses',
+            'schedule': crontab(minute=50, hour=17),
         }
     }

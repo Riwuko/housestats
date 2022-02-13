@@ -12,14 +12,15 @@ class OLXContentScraper:
     AREA = "Powierzchnia"
     ROOMS = "Liczba pokoi"
     BUILDING = "Rodzaj zabudowy"
-    MAX_PAGE = 15
+    MAX_PAGE = 30
 
     def __init__(self, url):
         self._url = url
     
     def scrap(self):
         offers = []
-        for page_num in range(self.MAX_PAGE):
+        for page_num in range(1, self.MAX_PAGE):
+            print(f'Scraping data from page {page_num}...')
             page = get(self._url, params={'page': page_num})
             parsed_page = bs.BeautifulSoup(page.content, 'html.parser')
             offers += parsed_page.find_all('div', class_='offer-wrapper')
@@ -44,6 +45,9 @@ class OLXContentScraper:
             **detail_data
         })
 
+    def _remove_substring(self, string, substring):
+        return string.replace(substring, "") if string else None
+
     def _get_offer_detail_data(self, hyperlink):
         if not self.OLX_URL in hyperlink:
             return {}
@@ -53,7 +57,7 @@ class OLXContentScraper:
         rooms_count = parsed_page.find(text=re.compile(self.ROOMS))
         building_type = parsed_page.find(text=re.compile(self.BUILDING))
         return {
-            "area_text": area.replace(self.AREA, ""),
-            "rooms_count_text": rooms_count.replace(self.ROOMS, ""),
-            "building_type": building_type.replace(self.BUILDING, "")
+            "area_text": self._remove_substring(area, self.AREA),
+            "rooms_count_text": self._remove_substring(rooms_count, self.ROOMS),
+            "building_type": self._remove_substring(building_type, self.BUILDING)
         }

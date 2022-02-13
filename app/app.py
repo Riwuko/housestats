@@ -28,9 +28,17 @@ app_dash = dash.Dash(
     meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1.0"}],
     external_stylesheets=[dbc.themes.BOOTSTRAP]
     )
-app_dash.layout = html.Div(
-    [dcc.Location(id="url", refresh=False), html.Div(id="page-content", children=[])]
-)
+
+app_dash.layout = html.Div([
+    html.Div(
+        className="app-header",
+        children=[
+            html.Div('houseStats |', className="app-header--title")
+        ]
+    ),
+    dcc.Location(id="url", refresh=False), html.Div(id="page-content", children=[], className='app-content'),
+])
+
 
 
 @app_dash.callback(Output("page-content", "children"), [Input("url", "pathname")])

@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from babel.numbers import parse_decimal
 
 class OLXContentParser:
 
@@ -27,7 +28,7 @@ class OLXContentParser:
     @_params_to_text_decorator
     def _parse_single_offer(self, offer):
         return {
-            "price": self._parse_text_to_float(offer.get('price_text')),
+            "price": parse_decimal(offer.get('price_text').replace('zł',''), locale='pl'),
             "datetime": self._parse_datetime(offer.get('datetime_text')),
             "location_city": self._parse_location(offer.get('location_text'))[0],
             "location_region": self._parse_location(offer.get('location_text'))[1],
