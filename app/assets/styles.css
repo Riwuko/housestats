@@ -92,11 +92,6 @@ body {
 
 }
 
-/* .chart-chart{
-    background-color: var(--main-color-lighter);
-    background-color: var(--main-color-lightest);
-} */
-
 .chart-dropdown  .Select, .Select div, .Select input,.Select span { 
     background: var(--main-color-lighter);
     color: var(--main-accent);

@@ -39,8 +39,6 @@ app_dash.layout = html.Div([
     dcc.Location(id="url", refresh=False), html.Div(id="page-content", children=[], className='app-content'),
 ])
 
-
-
 @app_dash.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def display_page(pathname):
     try:

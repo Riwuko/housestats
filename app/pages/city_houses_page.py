@@ -15,13 +15,14 @@ class CityHousesPage(BasePage):
     @classmethod
     def layout(cls, params={}):
         cities = cls._get_cities_options()
+        city_value = cls._get_option_by_name(cities, "Poznań").get("value")
         prices_to = cls._get_prices_options(greater_than=False)
         prices_from = cls._get_prices_options(greater_than=True)
         return html.Div(
             [
                 html.Div(
                     dcc.Dropdown(
-                        id='city_dropdown', options=cities, value=[cities[0].get("value")], multi=True, className='chart-dropdown'
+                        id='city_dropdown', options=cities, value=[city_value], multi=True, className='chart-dropdown'
                     ), className='row-inputs-container-left'
                 ),
                 html.Div(
@@ -108,30 +109,30 @@ class CityHousesPage(BasePage):
         return cls._get_price_dict_format(prices, sign)
 
     @classmethod
+    def _get_option_by_name(cls, options, name):
+        return list(filter(lambda opt: opt['label'] == name, options))[0]
+
+    @classmethod
     def _get_data_price_offer_graph(cls, data):
-        axes_data = {
-            "price": data.get("price"),
-            "y_title": "Offer price",
-            "name": data.get("name"),
-            "date": data.get("datetime").dt.strftime('%d %b'),
-            "x_title": "House offer",
-            "index": list(range(len(data))),
-            "website": data.get("website"),
-            "city": data.get("location_city"),
-        }
         return cls._make_scatter(
-            axes_data, "<b>City house offers with their prices</b>"
+            data, "<b>City house offers with their prices</b>"
         )
 
     @classmethod
     def _make_scatter(cls, data, title):
-        fig = go.Figure(data=go.Bar(x=data["index"],y=data["price"], customdata=data["name"], text=data["website"]))
+        color = {'Aftermarket': 'pink', 'Primary market': 'deeppink'}
+        data["index"] = list(range(len(data)))
+        fig = go.Figure()
+        for lbl in data['market'].unique():
+            dfp = data[data['market']==lbl]
+            fig.add_traces(go.Bar(x=dfp["index"], y=dfp['price'], name=lbl,
+                                    marker = dict(color=color[lbl]), customdata=data["name"], text=data["website"]
+                                    ))
+
         fig.update_traces(
             marker_line_width=0,
-            marker = dict(
-                color = "pink",
-            ),
             hovertemplate='Name:%{customdata}<br>%{x}<br>Price:%{y}<br>www: %{text} <extra></extra>',
+            showlegend=True,
         )
         fig.update_layout(
             clickmode='event+select',
@@ -146,17 +147,17 @@ class CityHousesPage(BasePage):
             plot_bgcolor ="rgba(0, 0, 0, 0)", 
             paper_bgcolor = "rgba(0, 0, 0, 0)",
             xaxis=dict(
-                title=data["x_title"],
+                title="House offer",
                 showticklabels=True,
                 tickvals=data["index"],
-                ticktext=data["date"],
+                ticktext=data["datetime"],
                 ticklen=20,
                 dtick = 1,
                 ticks="inside",
                 tickfont=dict(color='crimson', size=6)
             ),
             yaxis=dict(
-                title=data["y_title"],
+                title="Offer price",
                 showgrid = False,
                 zeroline=False,
 

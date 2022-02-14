@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from babel.numbers import parse_decimal
+import re
 
 class OLXContentParser:
 
@@ -8,6 +9,8 @@ class OLXContentParser:
     """
     TODAY = "dzisiaj"
     YESTERDAY = "wczoraj"
+    AFTERMARKER = "Aftermarket"
+    PRIMARY_MARKET = "Primary market"
 
     def __init__(self, olx_data):
         self._offers_list = olx_data
@@ -36,8 +39,18 @@ class OLXContentParser:
             "rooms_count": self._parse_text_to_int(offer.get('rooms_count_text')),
             "website": offer.get('website'),
             "name": offer.get('name'),
-            "building_type": offer.get('building_type', '')
+            "building_type": re.sub("[^a-zA-Z]+", "", offer.get('building_type', '')),
+            "market": self._parse_market_type(offer.get("market", "")),
         }
+
+    def _parse_market_type(self, market_text):
+        if market_text is None:
+            return market_text
+        text = re.sub("[^a-zA-Z]+", "", market_text)
+        if re.search(r'^w.*y$', text.lower()):
+            return self.AFTERMARKER
+        else:
+            return self.PRIMARY_MARKET
 
     def _parse_location(self, location):
         location = location.split(',')

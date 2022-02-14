@@ -9,7 +9,7 @@ migrate = Migrate()
 class House(db.Model):
     __tablename__ = 'houses'
     __table_args__ = (
-        db.UniqueConstraint('name', 'datetime'),
+        db.UniqueConstraint('name', 'website'),
       )
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -22,6 +22,7 @@ class House(db.Model):
     website = db.Column(URLType, nullable=False)
     location_city = db.Column(db.String(), nullable=False)
     location_region = db.Column(db.String(), nullable=True)
+    market = db.Column(db.Enum("Aftermarket", "Primary market", name="market_category"), nullable=True)
 
     def __repr__(self):
         return f'{self.id}: "{self.name}" ({self.rooms_count} pokoje) - {self.price} zł'

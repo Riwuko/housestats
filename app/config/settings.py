@@ -31,6 +31,6 @@ class Worker:
     beat_schedule = {
         'download-olx-house': {
             'task': 'tasks.download_olx_houses',
-            'schedule': crontab(minute=50, hour=17),
+            'schedule': crontab(minute=50, hour=18),
         }
     }

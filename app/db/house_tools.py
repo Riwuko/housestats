@@ -1,5 +1,5 @@
 from .models import House
-from .db_tools import bulk_add, get_all, remove_all
+from .db_tools import bulk_add, get_all, remove_all, remove, bulk_update
 
 HOUSE_MODEL = House
 
@@ -13,6 +13,16 @@ def prepare_houses_to_create(houses, existing_houses):
         house['name'].lower() == existing_house.name.lower()
         for existing_house in existing_houses
     )]
+
+def prepare_houses_to_update(houses, existing_houses):
+    houses_for_update = []
+    for house in houses:
+        for existing_house in existing_houses:
+            if house["name"]==existing_house.name:
+                house.update(vars(existing_house))
+                houses_for_update.append(house)
+                break
+    return houses_for_update
 
 def remove_duplicates(iterable, key=None):
     if key is None:
@@ -28,10 +38,13 @@ def remove_duplicates(iterable, key=None):
         seen.add(k)
 
 def add_new_houses(houses):
-    houses_for_update = get_houses_by_name(houses)
-    houses_for_create = prepare_houses_to_create(houses, houses_for_update)
-    unique_houses = remove_duplicates(houses_for_create, lambda d: (d["name"], d["datetime"]))
+    existing_houses = get_houses_by_name(houses)
+    houses_for_create = prepare_houses_to_create(houses, existing_houses)
+    unique_houses = remove_duplicates(houses_for_create, lambda d: (d["name"], d["website"]))
     bulk_add(HOUSE_MODEL, unique_houses)
+
+    houses_for_update = prepare_houses_to_update(houses, existing_houses)
+    bulk_update(HOUSE_MODEL, houses_for_update)
     return get_houses_by_name(unique_houses)
 
 def get_houses():
@@ -41,3 +54,5 @@ def remove_all_houses():
     HOUSE_MODEL.query.delete()
     remove_all(HOUSE_MODEL)
     
+def remove_house_by_name(house_name):
+    remove(HOUSE_MODEL, house_name)

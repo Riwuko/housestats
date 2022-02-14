@@ -3,16 +3,10 @@ import pandas as pd
 from .base_loader import DataLoader
 from db.house_tools import get_houses
 from datetime import timedelta, date
-
-class CityHousesLoaderParameters():
-    CITY = "city"
-    STAR_DATE = "start_date"
-    END_DATE = "end_date"
-    PRICE_FROM = "price_from"
-    PRICE_TO = "price_to"
+from .loader_parameters import CityHousesParameters
 
 class CityHousesLoader(DataLoader):
-    PARAMS = CityHousesLoaderParameters
+    PARAMS = CityHousesParameters
 
     def load_data(self, params):
         self._data = self._get_data()

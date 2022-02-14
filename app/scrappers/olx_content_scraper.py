@@ -12,7 +12,8 @@ class OLXContentScraper:
     AREA = "Powierzchnia"
     ROOMS = "Liczba pokoi"
     BUILDING = "Rodzaj zabudowy"
-    MAX_PAGE = 30
+    MARKET = "Rynek"
+    MAX_PAGE = 60
 
     def __init__(self, url):
         self._url = url
@@ -32,7 +33,7 @@ class OLXContentScraper:
         footer = offer.find('td', class_='bottom-cell')
         footer_data = footer.find_all('small', class_='breadcrumb')
         location_text, date_time_text = footer_data
-
+    
         hyperlink = offer.find('a')['href']
         detail_data = self._get_offer_detail_data(hyperlink)
 
@@ -55,9 +56,11 @@ class OLXContentScraper:
         parsed_page = bs.BeautifulSoup(offer_page.content, 'html.parser')
         area = parsed_page.find(text=re.compile(self.AREA))
         rooms_count = parsed_page.find(text=re.compile(self.ROOMS))
+        market = parsed_page.find(text=re.compile(self.MARKET))
         building_type = parsed_page.find(text=re.compile(self.BUILDING))
         return {
             "area_text": self._remove_substring(area, self.AREA),
             "rooms_count_text": self._remove_substring(rooms_count, self.ROOMS),
-            "building_type": self._remove_substring(building_type, self.BUILDING)
+            "building_type": self._remove_substring(building_type, self.BUILDING),
+            "market": self._remove_substring(market, self.MARKET),
         }
