@@ -1,1 +1,1 @@
-from .olx_content_scraper import OLXContentScraper
+from .house_data_scraper import HouseDataScraper
