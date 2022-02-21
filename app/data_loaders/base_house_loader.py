@@ -7,6 +7,8 @@ from .base_loader import DataLoader
 
 
 class HousesParameters:
+    """Class for enum house parameters representing filtering values"""
+
     CITY = "city"
     START_DATE = "start_date"
     END_DATE = "end_date"
@@ -16,9 +18,14 @@ class HousesParameters:
 
 
 class HouseLoader(DataLoader):
-    PARAMS = HousesParameters
+    """Loads data from house table and puts it into the DataFrame"""
 
-    def load_data(self, params=None):
+    PARAMS = HousesParameters
+    _end_date = None
+    _start_date = None
+
+    def load_data(self, params: dict = None) -> dict:
+        """Takes in params for filtering the data and returns filtered dataframe in a dict"""
         self._data = self._get_data()
 
         data = self._data
@@ -28,7 +35,8 @@ class HouseLoader(DataLoader):
             "plain": data,
         }
 
-    def get_metadata(self):
+    def get_metadata(self) -> dict:
+        """Calculates universal class metadata that does not depend on filtering params"""
         datetimes = self._data.datetime
         latest_date = datetimes.max().date()
         start_date = date.today() - timedelta(days=2)
@@ -44,7 +52,8 @@ class HouseLoader(DataLoader):
             "available_cities": self._data.location_city.unique(),
         }
 
-    def _get_data_by_param(self, data, param_name, param_val):
+    def _get_data_by_param(self, data: pd.DataFrame, param_name: str, param_val) -> pd.DataFrame:
+        """Takes in param name and chooses appropriate filtering function"""
         return {
             self.PARAMS.START_DATE: self._get_data_by_start_date,
             self.PARAMS.END_DATE: self._get_data_by_end_date,
@@ -54,32 +63,43 @@ class HouseLoader(DataLoader):
             self.PARAMS.AREA: self._get_data_by_area,
         }.get(param_name)(data, param_val)
 
-    def _get_data(self):
+    def _get_data(self) -> pd.DataFrame:
+        """Loads data into the dataframe"""
         return pd.DataFrame(h.__dict__ for h in get_houses())
 
-    def _get_data_by_date(self, df, filter_date):
+    def _get_data_by_date(self, df: pd.DataFrame, filter_date: str) -> pd.DataFrame:
+        """Filters dataframe by date"""
         return df[df["datetime"].dt.date == pd.Timestamp(filter_date)]
 
-    def _get_date_from_param_or_meta(self, date, param_name):
-        return date if date else self.get_metadata().get(param_name)
+    def _get_data_by_start_date(self, df: pd.DataFrame, start_date: str) -> pd.DataFrame:
+        """Filters dateframe by start date (returns only records with datetime greater than start date)"""
+        if not self._start_date and not start_date:
+            self._start_date = self.get_metadata().get(self.PARAMS.START_DATE)
+        else:
+            self._start_date = start_date
+        return df[(df["datetime"].dt.date >= pd.Timestamp(self._start_date))]
 
-    def _get_data_by_start_date(self, df, start_date):
-        start_date = self._get_date_from_param_or_meta(start_date, self.PARAMS.START_DATE)
-        return df[(df["datetime"].dt.date >= pd.Timestamp(start_date))]
+    def _get_data_by_end_date(self, df: pd.DataFrame, end_date: str) -> pd.DataFrame:
+        """Filters dateframe by end date (returns only records with datetime less than end date)"""
+        if not self._end_date and not end_date:
+            self._end_date = self.get_metadata().get(self.PARAMS.END_DATE)
+        else:
+            self._end_date = end_date
+        return df[(df["datetime"].dt.date <= pd.Timestamp(self._end_date))]
 
-    def _get_data_by_end_date(self, df, end_date):
-        end_date = self._get_date_from_param_or_meta(end_date, self.PARAMS.END_DATE)
-        return df[(df["datetime"].dt.date <= pd.Timestamp(end_date))]
-
-    def _get_data_by_city(self, df, cities):
+    def _get_data_by_city(self, df: pd.DataFrame, cities: list) -> pd.DataFrame:
+        """Filters dateframe by city"""
         return df[df["location_city"].isin(cities)]
 
-    def _get_data_by_price_from(self, df, price_from):
+    def _get_data_by_price_from(self, df: pd.DataFrame, price_from: float) -> pd.DataFrame:
+        """Filters dateframe by price from (returns only records with price greater than price from)"""
         return df[df["price"] >= price_from]
 
-    def _get_data_by_price_to(self, df, price_to):
+    def _get_data_by_price_to(self, df: pd.DataFrame, price_to: float) -> pd.DataFrame:
+        """Filters dateframe by price to (returns only records with price less than price to)"""
         return df[df["price"] <= price_to]
 
-    def _get_data_by_area(self, df, area_range):
+    def _get_data_by_area(self, df: pd.DataFrame, area_range: tuple) -> pd.DataFrame:
+        """Filters dateframe by area range"""
         mask = (df["area"] > float(area_range[0])) & (df["area"] <= float(area_range[1]))
         return df.loc[mask]

@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 
 class BasePage(ABC):
+    """Abstract Page class that renders html for data from data loader and register callbacks"""
+
     data_loader = None
     dataframe = None
     params = {}

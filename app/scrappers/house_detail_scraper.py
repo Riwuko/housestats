@@ -1,36 +1,20 @@
 import re
-
 import bs4 as bs
+from abc import ABC
 from requests import get
 
 
-class HouseDetailScraper:
-    OTODOM_URL = "www.otodom.pl"
-    OLX_URL = "www.olx.pl"
+class HouseDetailStrategy(ABC):
+    """Abstract strategy class that scraps house offer detail data with BeautifulSoup"""
 
-    def scrap_detail_house_data(self, hyperlink):
-        domain = self._get_domain_from_hyperlink(hyperlink)
-        scraping_strategy = self._get_strategy(domain)
-        return scraping_strategy.get_data(hyperlink)
-
-    def _get_domain_from_hyperlink(self, hyperlink):
-        return self.OLX_URL if self.OLX_URL in hyperlink else self.OTODOM_URL
-
-    def _get_strategy(self, domain):
-        return {
-            self.OLX_URL: OlxHouseDetailStrategy(),
-            self.OTODOM_URL: OtodomHouseDetailStrategy(),
-        }.get(domain)
-
-
-class HouseDetailStrategy:
     HOUSE_DATA = {}
     AREA = "Powierzchnia"
     ROOMS = "Liczba pokoi"
     BUILDING = "Rodzaj zabudowy"
     MARKET = "Rynek"
 
-    def get_data(self, hyperlink):
+    def get_data(self, hyperlink: str) -> dict:
+        """Takes in a hyperlink, scraps data, pre-prepares it and returns it as a dict"""
         offer_page = get(hyperlink)
         parsed_page = bs.BeautifulSoup(offer_page.content, "html.parser")
         data = self._scrap_data(parsed_page)
@@ -41,15 +25,19 @@ class HouseDetailStrategy:
             "market": self._remove_substring(data["market"], self.MARKET),
         }
 
-    def _scrap_data(self, parsed_page):
+    def _scrap_data(self, parsed_page: str) -> dict:
+        """Concrete function that can scrap web page data"""
         raise NotImplementedError
 
-    def _remove_substring(self, string, substring):
+    def _remove_substring(self, string: str, substring: str) -> str:
+        """Finds substring in a string and removes it"""
         return string.replace(substring, "") if string else ""
 
 
 class OlxHouseDetailStrategy(HouseDetailStrategy):
-    def _scrap_data(self, parsed_page):
+    """Scraper for OLX house offer detail web page"""
+
+    def _scrap_data(self, parsed_page: str) -> dict:
         return {
             "area": parsed_page.find(text=re.compile(self.AREA)),
             "rooms_count": parsed_page.find(text=re.compile(self.ROOMS)),
@@ -59,7 +47,9 @@ class OlxHouseDetailStrategy(HouseDetailStrategy):
 
 
 class OtodomHouseDetailStrategy(HouseDetailStrategy):
-    def _scrap_data(self, parsed_page):
+    """Scraper for Otodom house offer detail web page"""
+
+    def _scrap_data(self, parsed_page: str) -> dict:
         area = parsed_page.find("div", {"aria-label": self.AREA})
         rooms = parsed_page.find("div", {"aria-label": self.ROOMS})
         market = parsed_page.find("div", {"aria-label": self.MARKET})
@@ -70,3 +60,27 @@ class OtodomHouseDetailStrategy(HouseDetailStrategy):
             "market": market.get_text() if market else "",
             "building_type": building.get_text() if building else "",
         }
+
+
+class HouseDetailScraper:
+    """Uses scraping strategy based on URL and returns scraped data"""
+
+    OTODOM_URL = "www.otodom.pl"
+    OLX_URL = "www.olx.pl"
+
+    def scrap_detail_house_data(self, hyperlink: str) -> dict:
+        """Takes in a house offer hyperlink, returns scraped data"""
+        domain = self._get_domain_from_hyperlink(hyperlink)
+        scraping_strategy = self._get_strategy(domain)
+        return scraping_strategy.get_data(hyperlink)
+
+    def _get_domain_from_hyperlink(self, hyperlink: str) -> str:
+        """Takes in a house offer hyperlink and return its domain"""
+        return self.OLX_URL if self.OLX_URL in hyperlink else self.OTODOM_URL
+
+    def _get_strategy(self, domain: str) -> HouseDetailStrategy:
+        """Gets a domain and returns appropriate scraping class instance"""
+        return {
+            self.OLX_URL: OlxHouseDetailStrategy(),
+            self.OTODOM_URL: OtodomHouseDetailStrategy(),
+        }.get(domain)
