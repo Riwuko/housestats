@@ -3,13 +3,14 @@ import dash_html_components as html
 from dash.dependencies import Input, Output
 from data_loaders import AverageHousesPricesLoader
 from data_loaders import AveragePricesParameters as avg_params
-from plotly import express as px
 from plotly import graph_objects as go
 
 from .base_houses_prices_page import BaseHousesPricesPage
 
 
 class AverageHousesPricesKeys:
+    """Provides unique ID for constant reusable html elements"""
+
     CITY_DROPDOWN = "AVG_CITY_DROPDOWN"
     GRAPH = "AVG_GRAPH"
     OFFER_LINK = "AVG_OFFER_LINK"
@@ -20,11 +21,13 @@ class AverageHousesPricesKeys:
 
 
 class AverageHousesPricesPage(BaseHousesPricesPage):
+    """House Average Prices Page that privides html layout for house average prices data"""
+
     data_loader = AverageHousesPricesLoader()
     KEYS = AverageHousesPricesKeys()
 
     @classmethod
-    def layout(cls, params={}):
+    def layout(cls, params=None):
         return html.Div(
             [
                 cls._render_cities_dropdown("row-inputs-container-left"),

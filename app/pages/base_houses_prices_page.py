@@ -5,10 +5,12 @@ from .base_page import BasePage
 
 
 class BaseHousesPricesPage(BasePage):
+    """Base House Price Page that privides basic html layout for house data"""
+
     KEYS = None
 
     @classmethod
-    def layout(cls, params={}):
+    def layout(cls, params=None) -> html:
         return html.Div(
             [
                 cls._render_cities_dropdown("row-inputs-container-left"),

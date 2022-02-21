@@ -10,6 +10,8 @@ from .base_houses_prices_page import BaseHousesPricesPage
 
 
 class CombinedPricesAveragesPricesKeys:
+    """Provides unique ID for constant reusable html elements"""
+
     CITY_DROPDOWN = "COMB_CITY_DROPDOWN"
     GRAPH = "COMB_GRAPH"
     OFFER_LINK = "COMB_OFFER_LINK"
@@ -22,6 +24,8 @@ class CombinedPricesAveragesPricesKeys:
 
 
 class CombinedPricesAveragesPage(BaseHousesPricesPage):
+    """Page that combines house offers prices and average prices and privides html layout for it"""
+
     data_loader = CityHousesLoader()
     avg_data_loader = AverageHousesPricesLoader()
     KEYS = CombinedPricesAveragesPricesKeys()
@@ -33,7 +37,7 @@ class CombinedPricesAveragesPage(BaseHousesPricesPage):
         cls.avg_dataframe = cls.avg_data_loader.load_data(cls.avg_params)
 
     @classmethod
-    def layout(cls, params={}):
+    def layout(cls, params=None):
         return html.Div(
             [
                 cls._render_cities_dropdown("row-inputs-container-left"),

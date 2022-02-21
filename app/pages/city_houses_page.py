@@ -9,6 +9,8 @@ from .base_houses_prices_page import BaseHousesPricesPage
 
 
 class CityHousesKeys:
+    """Provides unique ID for constant reusable html elements"""
+
     CITY_DROPDOWN = "CITY_DROPDOWN"
     GRAPH = "GRAPH"
     OFFER_LINK = "OFFER_LINK"
@@ -19,6 +21,8 @@ class CityHousesKeys:
 
 
 class CityHousesPage(BaseHousesPricesPage):
+    """House Offer Prices Page that privides html layout for house offer prices data"""
+
     data_loader = CityHousesLoader()
     KEYS = CityHousesKeys()
 
