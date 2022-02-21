@@ -1,12 +1,15 @@
-from datetime import datetime, timedelta
-from babel.numbers import parse_decimal
 import re
+from datetime import datetime, timedelta
+
+from babel.numbers import parse_decimal
+
 
 class OLXContentParser:
 
     """
     ContentScraper class parses the data to declared format
     """
+
     TODAY = "dzisiaj"
     YESTERDAY = "wczoraj"
     AFTERMARKER = "Aftermarket"
@@ -26,20 +29,21 @@ class OLXContentParser:
                 except AttributeError:
                     pass
             return func(self, offer=offer)
+
         return wrapper
 
     @_params_to_text_decorator
     def _parse_single_offer(self, offer):
         return {
-            "price": parse_decimal(offer.get('price_text').replace('zł','').replace(',','.'), locale='pl'),
-            "datetime": self._parse_datetime(offer.get('datetime_text')),
-            "location_city": self._parse_location(offer.get('location_text'))[0],
-            "location_region": self._parse_location(offer.get('location_text'))[1],
-            "area": self._parse_text_to_float(offer.get('area_text')),
-            "rooms_count": self._parse_text_to_int(offer.get('rooms_count_text')),
-            "website": offer.get('website'),
-            "name": offer.get('name'),
-            "building_type": re.sub("[^a-zA-Z]+", "", offer.get('building_type', '')),
+            "price": parse_decimal(offer.get("price_text").replace("zł", "").replace(",", "."), locale="pl"),
+            "datetime": self._parse_datetime(offer.get("datetime_text")),
+            "location_city": self._parse_location(offer.get("location_text"))[0],
+            "location_region": self._parse_location(offer.get("location_text"))[1],
+            "area": self._parse_text_to_float(offer.get("area_text")),
+            "rooms_count": self._parse_text_to_int(offer.get("rooms_count_text")),
+            "website": offer.get("website"),
+            "name": offer.get("name"),
+            "building_type": re.sub("[^a-zA-Z]+", "", offer.get("building_type", "")),
             "market": self._parse_market_type(offer.get("market", "")),
         }
 
@@ -47,13 +51,13 @@ class OLXContentParser:
         if not market_text:
             return None
         text = re.sub("[^a-zA-Z]+", "", market_text)
-        if re.search(r'^w.*y$', text.lower()):
+        if re.search(r"^w.*y$", text.lower()):
             return self.AFTERMARKER
         else:
             return self.PRIMARY_MARKET
 
     def _parse_location(self, location):
-        location = location.split(',')
+        location = location.split(",")
         city = location[0]
         try:
             region = location[1]
@@ -62,10 +66,10 @@ class OLXContentParser:
         return city, region
 
     def _parse_text_to_float(self, text):
-        return float(''.join(filter(str.isdigit, text.replace(',','.').replace("²", "")))) if text else None
+        return float("".join(filter(str.isdigit, text.replace(",", ".").replace("²", "")))) if text else None
 
     def _parse_text_to_int(self, text):
-        return int(''.join(filter(str.isdigit, text))) if text else None
+        return int("".join(filter(str.isdigit, text))) if text else None
 
     def _parse_datetime(self, date_data):
         date_core = date_data[:-6]
@@ -86,14 +90,20 @@ class OLXContentParser:
 
     def _get_datetime_by_month_text(self, month_text):
         month_string = {
-            "sty": "january",    "lut": "february",
-            "mar": "march",      "kwie": "april",
-            "maj": "may",        "cze": "june",
-            "lip": "july",       "sie": "august",
-            "wrz": "september",  "paź": "october",
-            "lis": "november",   "gru": "december"
+            "sty": "january",
+            "lut": "february",
+            "mar": "march",
+            "kwie": "april",
+            "maj": "may",
+            "cze": "june",
+            "lip": "july",
+            "sie": "august",
+            "wrz": "september",
+            "paź": "october",
+            "lis": "november",
+            "gru": "december",
         }.get(month_text[-3:])
         year = datetime.now().year
         day = month_text[:-4]
-        date_string = f'{day} {month_string} {year}'
+        date_string = f"{day} {month_string} {year}"
         return datetime.strptime(date_string, "%d %B %Y")

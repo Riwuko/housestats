@@ -1,16 +1,15 @@
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import true
 from sqlalchemy_utils import URLType
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 
 db = SQLAlchemy()
 migrate = Migrate()
 
+
 class House(db.Model):
-    __tablename__ = 'houses'
-    __table_args__ = (
-        db.UniqueConstraint('name', 'website'),
-      )
+    __tablename__ = "houses"
+    __table_args__ = (db.UniqueConstraint("name", "website"),)
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(), nullable=False)

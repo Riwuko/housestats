@@ -20,7 +20,6 @@ def setenv(variable, default):
     os.environ[variable] = os.getenv(variable, default)
 
 
-
 @click.group()
 def cli():
     pass
@@ -38,7 +37,6 @@ def flask(subcommand):
     except KeyboardInterrupt:
         p.send_signal(signal.SIGINT)
         p.wait()
-
 
 
 if __name__ == "__main__":

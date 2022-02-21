@@ -1,14 +1,14 @@
 from turtle import down
+
 import dash
 import dash_bootstrap_components as dbc
-from flask import Flask
-
 import dash_core_components as dcc
 import dash_html_components as html
 from config import AppConfig, make_celery
 from dash.dependencies import Input, Output
-from pages import CityHousesPage, AverageHousesPricesPage, CombinedPricesAveragesPage
 from db.models import db, migrate
+from flask import Flask
+from pages import AverageHousesPricesPage, CityHousesPage, CombinedPricesAveragesPage
 
 app = Flask(__name__)
 app.config.from_object(AppConfig)
@@ -19,28 +19,28 @@ celery = make_celery(app)
 
 db.create_all()
 pathnames_pages = {
-    "/" : CombinedPricesAveragesPage,
+    "/": CombinedPricesAveragesPage,
     "/average-prices": AverageHousesPricesPage,
     "/offers-prices": CityHousesPage,
 }
 
 # meta_tags are required for the app layout to be mobile responsive
 app_dash = dash.Dash(
-    __name__, server=app,
-    suppress_callback_exceptions=True, 
+    __name__,
+    server=app,
+    suppress_callback_exceptions=True,
     meta_tags=[{"name": "viewport", "content": "width=device-width, initial-scale=1.0"}],
-    external_stylesheets=[dbc.themes.BOOTSTRAP]
-    )
+    external_stylesheets=[dbc.themes.BOOTSTRAP],
+)
 
-app_dash.layout = html.Div([
-    html.Div(
-        className="app-header",
-        children=[
-            html.Div('houseStats |', className="app-header--title")
-        ]
-    ),
-    dcc.Location(id="url", refresh=False), html.Div(id="page-content", children=[], className='app-content'),
-])
+app_dash.layout = html.Div(
+    [
+        html.Div(className="app-header", children=[html.Div("houseStats |", className="app-header--title")]),
+        dcc.Location(id="url", refresh=False),
+        html.Div(id="page-content", children=[], className="app-content"),
+    ]
+)
+
 
 @app_dash.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def display_page(pathname):
@@ -53,8 +53,9 @@ def display_page(pathname):
 
     return page.layout()
 
-if __name__ == '__main__':
-  for page_class in pathnames_pages.values():
+
+if __name__ == "__main__":
+    for page_class in pathnames_pages.values():
         page_class.register_callbacks(app_dash)
 
-  app_dash.run_server(host='0.0.0.0', port=8080, debug=True, threaded=True)
+    app_dash.run_server(host="0.0.0.0", port=8080, debug=True, threaded=True)
