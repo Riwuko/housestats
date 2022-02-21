@@ -1,3 +1,3 @@
-from .city_houses_page import CityHousesPage
 from .average_houses_prices_page import AverageHousesPricesPage
+from .city_houses_page import CityHousesPage
 from .combined_prices_avg_page import CombinedPricesAveragesPage
