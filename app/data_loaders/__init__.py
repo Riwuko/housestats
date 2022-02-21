@@ -1,1 +1,3 @@
 from .city_houses_loader import CityHousesLoader
+from .base_house_loader import HousesParameters
+from .average_houses_prices_loader import AverageHousesPricesLoader, AveragePricesParameters

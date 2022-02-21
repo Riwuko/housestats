@@ -31,7 +31,7 @@ class OLXContentParser:
     @_params_to_text_decorator
     def _parse_single_offer(self, offer):
         return {
-            "price": parse_decimal(offer.get('price_text').replace('zł',''), locale='pl'),
+            "price": parse_decimal(offer.get('price_text').replace('zł','').replace(',','.'), locale='pl'),
             "datetime": self._parse_datetime(offer.get('datetime_text')),
             "location_city": self._parse_location(offer.get('location_text'))[0],
             "location_region": self._parse_location(offer.get('location_text'))[1],
@@ -44,8 +44,8 @@ class OLXContentParser:
         }
 
     def _parse_market_type(self, market_text):
-        if market_text is None:
-            return market_text
+        if not market_text:
+            return None
         text = re.sub("[^a-zA-Z]+", "", market_text)
         if re.search(r'^w.*y$', text.lower()):
             return self.AFTERMARKER
@@ -62,14 +62,10 @@ class OLXContentParser:
         return city, region
 
     def _parse_text_to_float(self, text):
-        if text is None:
-            return text
-        return float(''.join(filter(str.isdigit, text.replace(',','.').replace("²", ""))))
+        return float(''.join(filter(str.isdigit, text.replace(',','.').replace("²", "")))) if text else None
 
     def _parse_text_to_int(self, text):
-        if text is None:
-            return text
-        return int(''.join(filter(str.isdigit, text)))
+        return int(''.join(filter(str.isdigit, text))) if text else None
 
     def _parse_datetime(self, date_data):
         date_core = date_data[:-6]

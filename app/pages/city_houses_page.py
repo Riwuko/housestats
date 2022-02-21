@@ -1,125 +1,65 @@
-from itertools import zip_longest
-import webbrowser  
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objects as go
 from dash.dependencies import Input, Output
-from data_loaders.city_houses_loader import CityHousesLoader
+from data_loaders import CityHousesLoader
 import plotly.graph_objects as go
 
-from .base_page import BasePage
+from data_loaders import HousesParameters as house_params
+from .base_houses_prices_page import BaseHousesPricesPage
 
-class CityHousesPage(BasePage):
+class CityHousesKeys():
+    CITY_DROPDOWN = "CITY_DROPDOWN"
+    GRAPH = "GRAPH"
+    OFFER_LINK = "OFFER_LINK"
+    AREA_SLIDER = "AREA_SLIDER"
+    DATE_PICKER = "DATE_PICKER"
+    PRICE_FROM = "PRICE_FROM"
+    PRICE_TO = "PRICE_TO"
+
+class CityHousesPage(BaseHousesPricesPage):
     data_loader = CityHousesLoader()
-
-    @classmethod
-    def layout(cls, params={}):
-        cities = cls._get_cities_options()
-        city_value = cls._get_option_by_name(cities, "Poznań").get("value")
-        prices_to = cls._get_prices_options(greater_than=False)
-        prices_from = cls._get_prices_options(greater_than=True)
-        return html.Div(
-            [
-                html.Div(
-                    dcc.Dropdown(
-                        id='city_dropdown', options=cities, value=[city_value], multi=True, className='chart-dropdown'
-                    ), className='row-inputs-container-left'
-                ),
-                html.Div(
-                    [
-                    dcc.Graph(
-                        id="data-price-offer", figure=cls._get_data_price_offer_graph(cls.dataframe.get("date_sorted")), className='chart-chart'
-                    ),
-                    html.Div([html.A('', target='_blank', id='on-click-graph-data', href=''),], className="offer-textholder"),
-                    ], className='chart-container'
-                ),
-
-                html.Div(
-                    [
-                        html.Div(
-                            dcc.DatePickerRange( id='date-picker-range', **cls._get_date_picker_data(), className='chart-datepicker', ),
-            
-                        ),
-                        html.Div(
-                            dcc.Dropdown(id='price_from_dropdown', options=prices_from, value=prices_from[0].get("value"), className='chart-dropdown'),
-                          
-                        ),
-                        html.Div(
-                            dcc.Dropdown(id='price_to_dropdown', options=prices_to, value=prices_to[-1].get("value"), className='chart-dropdown' ),
-                          
-                        ),
-                    ],className='row-inputs-container'),
-            
-            ], className='page-container')
-
+    KEYS = CityHousesKeys()
+    
     @classmethod
     def register_callbacks(cls, app):
         @app.callback(
-            Output("data-price-offer", "figure"),
-            [Input("date-picker-range", "start_date"),
-            Input("date-picker-range", "end_date"),
-            Input("city_dropdown", "value"),
-            Input("price_from_dropdown", "value"),
-            Input("price_to_dropdown", "value")],
+            Output(cls.KEYS.GRAPH, "figure"),
+            [Input(cls.KEYS.DATE_PICKER, "start_date"),
+            Input(cls.KEYS.DATE_PICKER, "end_date"),
+            Input(cls.KEYS.CITY_DROPDOWN, "value"),
+            Input(cls.KEYS.PRICE_FROM, "value"),
+            Input(cls.KEYS.PRICE_TO, "value"),
+            Input(cls.KEYS.AREA_SLIDER, "value"),
+            ],
         )
-        def callback_update_figure(start_date, end_date, city_value, price_from, price_to):
-            cls._update_param("start_date", start_date)
-            cls._update_param("end_date", end_date)
-            cls._update_param("city", city_value)
-            cls._update_param("price_from", price_from)
-            cls._update_param("price_to", price_to)
-            return cls._get_data_price_offer_graph(cls.dataframe.get("date_sorted"))
+        def callback_update_figure(start_date, end_date, city_value, price_from, price_to, area):
+            cls._update_param(house_params.START_DATE, start_date)
+            cls._update_param(house_params.END_DATE, end_date)
+            cls._update_param(house_params.CITY, city_value)
+            cls._update_param(house_params.PRICE_FROM, price_from)
+            cls._update_param(house_params.PRICE_TO, price_to)
+            areas = cls._get_areas_options()
+            cls._update_param(house_params.AREA, [areas[area[0]], areas[area[1]]])
+
+            return cls._get_houses_price_graph()
         
         @app.callback(
-            Output('on-click-graph-data', 'href'),
-            Input('data-price-offer', 'clickData'))
+            Output(cls.KEYS.OFFER_LINK, 'href'),
+            Input(cls.KEYS.GRAPH, 'clickData'))
         def display_click_data(clickData):
             if clickData:
-                print(clickData["points"][0].get("text"))
-                webbrowser.open_new(clickData["points"][0].get("text"))
                 return clickData["points"][0].get("text")
 
     @classmethod
-    def _get_date_picker_data(cls):
-        meta = cls.data_loader.get_metadata()
-        return {
-            "min_date_allowed": meta.get("min_date"),
-            "max_date_allowed": meta.get("max_date"),
-            "start_date": meta.get("start_date"),
-            "end_date": meta.get("max_date")
-        }
-    
-    @classmethod
-    def _get_dict_format(cls, objects):
-        return [{'label': x, 'value': x} for x in objects]
-
-    @classmethod
-    def _get_price_dict_format(cls, objects, sign='<'):
-        return [{'label': f'{sign} {x} zł', 'value': x} for x in objects]
-
-    @classmethod
-    def _get_cities_options(cls):
-        cities = cls.data_loader.get_metadata().get("available_cities")
-        return cls._get_dict_format(cities)
-
-    @classmethod
-    def _get_prices_options(cls, greater_than=True):
-        prices = list(range(0,1100000,100000))
-        sign = ">" if greater_than else "<"
-        return cls._get_price_dict_format(prices, sign)
-
-    @classmethod
-    def _get_option_by_name(cls, options, name):
-        return list(filter(lambda opt: opt['label'] == name, options))[0]
-
-    @classmethod
-    def _get_data_price_offer_graph(cls, data):
-        return cls._make_scatter(
+    def _get_houses_price_graph(cls):
+        data = cls.dataframe.get("plain")
+        return cls._make_bar(
             data, "<b>City house offers with their prices</b>"
         )
 
     @classmethod
-    def _make_scatter(cls, data, title):
+    def _make_bar(cls, data, title):
         color = {'Aftermarket': 'pink', 'Primary market': 'deeppink'}
         data["index"] = list(range(len(data)))
         fig = go.Figure()

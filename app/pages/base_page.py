@@ -8,7 +8,6 @@ class BasePage(ABC):
 
     @classmethod
     def load_data(cls):
-        pass
         cls.dataframe = cls.data_loader.load_data(cls.params)
 
     @classmethod

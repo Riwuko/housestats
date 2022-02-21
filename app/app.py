@@ -1,3 +1,4 @@
+from turtle import down
 import dash
 import dash_bootstrap_components as dbc
 from flask import Flask
@@ -6,7 +7,7 @@ import dash_core_components as dcc
 import dash_html_components as html
 from config import AppConfig, make_celery
 from dash.dependencies import Input, Output
-from pages import CityHousesPage
+from pages import CityHousesPage, AverageHousesPricesPage, CombinedPricesAveragesPage
 from db.models import db, migrate
 
 app = Flask(__name__)
@@ -18,7 +19,9 @@ celery = make_celery(app)
 
 db.create_all()
 pathnames_pages = {
-    "/": CityHousesPage,
+    "/" : CombinedPricesAveragesPage,
+    "/average-prices": AverageHousesPricesPage,
+    "/offers-prices": CityHousesPage,
 }
 
 # meta_tags are required for the app layout to be mobile responsive
@@ -49,7 +52,6 @@ def display_page(pathname):
     page.load_data()
 
     return page.layout()
-
 
 if __name__ == '__main__':
   for page_class in pathnames_pages.values():
