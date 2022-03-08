@@ -32,7 +32,7 @@ class AverageHousesPricesPage(BaseHousesPricesPage):
             [
                 cls._render_cities_dropdown("row-inputs-container-left"),
                 cls._render_avg_radios("row-inputs-container-right"),
-                cls._render_data_graph("chart-container"),
+                cls._render_graph_section("chart-container"),
                 cls._render_area_range_slider("row-inputs-container-range"),
                 html.Div(
                     [
@@ -64,7 +64,7 @@ class AverageHousesPricesPage(BaseHousesPricesPage):
             areas = cls._get_areas_options()
             cls._update_param(avg_params.AREA, [areas[area[0]], areas[area[1]]])
             cls._update_param(avg_params.AVG_GROUP_BY, avg_group_by)
-            return cls._get_houses_price_graph()
+            return cls._get_graph()
 
     @classmethod
     def _render_avg_radios(cls, class_name):
@@ -78,7 +78,7 @@ class AverageHousesPricesPage(BaseHousesPricesPage):
         )
 
     @classmethod
-    def _get_houses_price_graph(cls):
+    def _get_graph(cls):
         data = {
             "Primary market": cls.dataframe.get("primary_market_data"),
             "Aftermarket": cls.dataframe.get("aftermarket_data"),

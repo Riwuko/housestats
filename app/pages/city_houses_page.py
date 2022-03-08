@@ -9,8 +9,6 @@ from .base_houses_prices_page import BaseHousesPricesPage
 
 
 class CityHousesKeys:
-    """Provides unique ID for constant reusable html elements"""
-
     CITY_DROPDOWN = "CITY_DROPDOWN"
     GRAPH = "GRAPH"
     OFFER_LINK = "OFFER_LINK"
@@ -21,8 +19,6 @@ class CityHousesKeys:
 
 
 class CityHousesPage(BaseHousesPricesPage):
-    """House Offer Prices Page that privides html layout for house offer prices data"""
-
     data_loader = CityHousesLoader()
     KEYS = CityHousesKeys()
 
@@ -47,8 +43,7 @@ class CityHousesPage(BaseHousesPricesPage):
             cls._update_param(house_params.PRICE_TO, price_to)
             areas = cls._get_areas_options()
             cls._update_param(house_params.AREA, [areas[area[0]], areas[area[1]]])
-
-            return cls._get_houses_price_graph()
+            return cls._get_graph()
 
         @app.callback(Output(cls.KEYS.OFFER_LINK, "href"), Input(cls.KEYS.GRAPH, "clickData"))
         def display_click_data(clickData):
@@ -56,7 +51,7 @@ class CityHousesPage(BaseHousesPricesPage):
                 return clickData["points"][0].get("text")
 
     @classmethod
-    def _get_houses_price_graph(cls):
+    def _get_graph(cls):
         data = cls.dataframe.get("plain")
         return cls._make_bar(data, "<b>City house offers with their prices</b>")
 

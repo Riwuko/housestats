@@ -17,6 +17,7 @@ class CityHousesLoader(HouseLoader):
     def _get_data(self) -> pd.DataFrame:
         """Takes params for loading the data, add additional price column and returns it as a dict"""
         df = super()._get_data()
+        df = df.dropna(subset=["price", "area", "market"])
         df["price_mk"] = self._calculate_price_per_meter(df)
         return df
 

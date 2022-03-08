@@ -75,7 +75,7 @@ class HouseLoader(DataLoader):
         """Filters dateframe by start date (returns only records with datetime greater than start date)"""
         if not self._start_date and not start_date:
             self._start_date = self.get_metadata().get(self.PARAMS.START_DATE)
-        else:
+        elif not self._start_date:
             self._start_date = start_date
         return df[(df["datetime"].dt.date >= pd.Timestamp(self._start_date))]
 
@@ -83,7 +83,7 @@ class HouseLoader(DataLoader):
         """Filters dateframe by end date (returns only records with datetime less than end date)"""
         if not self._end_date and not end_date:
             self._end_date = self.get_metadata().get(self.PARAMS.END_DATE)
-        else:
+        elif not self._end_date:
             self._end_date = end_date
         return df[(df["datetime"].dt.date <= pd.Timestamp(self._end_date))]
 

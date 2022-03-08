@@ -14,7 +14,7 @@ class BaseHousesPricesPage(BasePage):
         return html.Div(
             [
                 cls._render_cities_dropdown("row-inputs-container-left"),
-                cls._render_data_graph("chart-container"),
+                cls._render_graph_section("chart-container"),
                 cls._render_area_range_slider("row-inputs-container-range"),
                 html.Div(
                     [
@@ -40,19 +40,31 @@ class BaseHousesPricesPage(BasePage):
         )
 
     @classmethod
-    def _render_data_graph(cls, class_name):
+    def _render_graph_section(cls, class_name):
         return html.Div(
             [
-                dcc.Graph(id=cls.KEYS.GRAPH, figure=cls._get_houses_price_graph(), className="chart-chart"),
+                dcc.Graph(id=cls.KEYS.GRAPH, figure=cls._get_graph(), className="chart-chart"),
                 html.Div(
                     [
-                        html.A("", target="_blank", id=cls.KEYS.OFFER_LINK, href=""),
+                        cls._render_offer_detail()
                     ],
                     className="offer-textholder",
                 ),
             ],
             className=class_name,
         )
+
+    @classmethod
+    def _render_offer_detail(cls):
+        return html.A("", target="_blank", id=cls.KEYS.OFFER_LINK, className="offer-hyperlink", href="")
+
+
+    # @classmethod
+    # def _render_offer_detail(cls, offer_text=None):
+    #     print(offer_text)
+    #     offer_text = f"Offer link: {offer_text}"
+    #     return html.Div(id=cls.KEYS.OFFER_LINK)
+
 
     @classmethod
     def _render_area_range_slider(cls, class_name):

@@ -1,3 +1,4 @@
+import click
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
@@ -42,7 +43,7 @@ class CombinedPricesAveragesPage(BaseHousesPricesPage):
             [
                 cls._render_cities_dropdown("row-inputs-container-left"),
                 cls._render_avg_radios("row-inputs-container-right"),
-                cls._render_data_graph("chart-container"),
+                cls._render_graph_section("chart-container"),
                 cls._render_area_range_slider("row-inputs-container-range"),
                 html.Div(
                     [
@@ -79,7 +80,12 @@ class CombinedPricesAveragesPage(BaseHousesPricesPage):
             areas = cls._get_areas_options()
             cls._update_param(avg_params.AREA, [areas[area[0]], areas[area[1]]])
             cls._update_avg_param(avg_params.AVG_GROUP_BY, avg_group_by)
-            return cls._get_houses_price_graph()
+            return cls._get_graph()
+
+        @app.callback(Output(cls.KEYS.OFFER_LINK, "href"), Input(cls.KEYS.GRAPH, "clickData"))
+        def display_click_data(clickData):
+            if clickData:
+                return clickData["points"][0].get("text")
 
     @classmethod
     def _update_param(cls, name, value):
@@ -104,7 +110,7 @@ class CombinedPricesAveragesPage(BaseHousesPricesPage):
         )
 
     @classmethod
-    def _get_houses_price_graph(cls):
+    def _get_graph(cls):
         title = "<b>House offers prices and average prices in selected cities</b>"
         data = {
             "Primary market": cls.avg_dataframe.get("primary_market_data"),
@@ -190,7 +196,6 @@ class CombinedPricesAveragesPage(BaseHousesPricesPage):
     @classmethod
     def _make_bar(cls, data):
         color = {"Aftermarket": "pink", "Primary market": "deeppink"}
-
         traces = []
         data["index"] = list(range(len(data)))
         for lbl in data["market"].unique():

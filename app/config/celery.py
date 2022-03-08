@@ -2,10 +2,6 @@ from celery import Celery
 
 from .settings import Worker
 
-# celery = Celery('tasks', broker=Worker.broker_url, backend=Worker.result_backend)
-# celery.config_from_object(Worker)
-
-# celery_app.autodiscover_tasks()
 def make_celery(app):
     celery = Celery(app.import_name, backend=Worker.result_backend, broker=Worker.broker_url)
     celery.conf.update(app.config)

@@ -57,7 +57,7 @@ html, body {
     font-size: 10px;
     position: absolute;
     align-self: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: -0.5rem;
 }
 
 .row-inputs-container-left{
